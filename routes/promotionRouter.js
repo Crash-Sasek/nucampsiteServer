@@ -17,14 +17,19 @@ promotionRouter
   })
 
   .post(authenticate.verifyUser, (req, res) => {
-    Promotion.create(req.body)
-      .then((promotion) => {
-        console.log("Promotion Created ", promotion);
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(promotion);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Promotion.create(req.body)
+        .then((promotion) => {
+          console.log("Promotion Created ", promotion);
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(promotion);
+        })
+        .catch((err) => next(err));
+    } else {
+      res.statusCode = 403;
+      res.end("You are not authorized to perform this operation!");
+    }
   })
 
   .put(authenticate.verifyUser, (req, res) => {
@@ -33,13 +38,18 @@ promotionRouter
   })
 
   .delete(authenticate.verifyUser, (req, res) => {
-    Promotion.deleteMany()
-      .then((response) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Promotion.deleteMany()
+        .then((response) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(response);
+        })
+        .catch((err) => next(err));
+    } else {
+      res.statusCode = 403;
+      res.end("You are not authorized to perform this operation!");
+    }
   });
 
 promotionRouter
@@ -62,29 +72,39 @@ promotionRouter
   })
 
   .put(authenticate.verifyUser, (req, res) => {
-    Promotion.findByIdAndUpdate(
-      req.params.promotionId,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    )
-      .then((promotion) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(promotion);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Promotion.findByIdAndUpdate(
+        req.params.promotionId,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      )
+        .then((promotion) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(promotion);
+        })
+        .catch((err) => next(err));
+    } else {
+      res.statusCode = 403;
+      res.end("You are not authorized to perform this operation!");
+    }
   })
 
   .delete(authenticate.verifyUser, (req, res) => {
-    Promotion.findByIdAndDelete(req.params.promotionId)
-      .then((response) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Promotion.findByIdAndDelete(req.params.promotionId)
+        .then((response) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(response);
+        })
+        .catch((err) => next(err));
+    } else {
+      res.statusCode = 403;
+      res.end("You are not authorized to perform this operation!");
+    }
   });
 
 module.exports = promotionRouter;

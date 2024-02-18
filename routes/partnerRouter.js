@@ -17,14 +17,22 @@ partnerRouter
   })
 
   .post(authenticate.verifyUser, (req, res) => {
-    Partner.create(req.body)
-      .then((partner) => {
-        console.log("Partner Created ", partner);
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(partner);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Partner.create(req.body)
+        .then((partner) => {
+          console.log("Partner Created ", partner);
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(partner);
+        })
+        .catch((err) => next(err));
+    } else {
+      const err = new Error(
+        "You are not authorized to perform this operation!"
+      );
+      err.status = 403;
+      return next(err);
+    }
   })
 
   .put(authenticate.verifyUser, (req, res) => {
@@ -33,13 +41,21 @@ partnerRouter
   })
 
   .delete(authenticate.verifyUser, (req, res) => {
-    Partner.deleteMany()
-      .then((response) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Partner.deleteMany()
+        .then((response) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(response);
+        })
+        .catch((err) => next(err));
+    } else {
+      const err = new Error(
+        "You are not authorized to perform this operation!"
+      );
+      err.status = 403;
+      return next(err);
+    }
   });
 
 partnerRouter
@@ -62,29 +78,45 @@ partnerRouter
   })
 
   .put(authenticate.verifyUser, (req, res) => {
-    Partner.findByIdAndUpdate(
-      req.params.partnerId,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    )
-      .then((partner) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(partner);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Partner.findByIdAndUpdate(
+        req.params.partnerId,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      )
+        .then((partner) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(partner);
+        })
+        .catch((err) => next(err));
+    } else {
+      const err = new Error(
+        "You are not authorized to perform this operation!"
+      );
+      err.status = 403;
+      return next(err);
+    }
   })
 
   .delete(authenticate.verifyUser, (req, res) => {
-    Partner.findByIdAndDelete(req.params.partnerId)
-      .then((response) => {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.json(response);
-      })
-      .catch((err) => next(err));
+    if (req.user.admin) {
+      Partner.findByIdAndDelete(req.params.partnerId)
+        .then((response) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(response);
+        })
+        .catch((err) => next(err));
+    } else {
+      const err = new Error(
+        "You are not authorized to perform this operation!"
+      );
+      err.status = 403;
+      return next(err);
+    }
   });
 
 module.exports = partnerRouter;
