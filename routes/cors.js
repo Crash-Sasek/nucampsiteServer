@@ -14,3 +14,5 @@ const corsOptionsDelegate = (req, callback) => {
 
 exports.cors = cors();
 exports.corsWithOptions = cors(corsOptionsDelegate);
+
+// Path: routes/campsiteRouter.js
