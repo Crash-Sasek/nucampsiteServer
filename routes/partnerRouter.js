@@ -1,12 +1,13 @@
 const express = require("express");
-const Partner = require("../models/partner");
-const authenticate = require("../authenticate");
-
 const partnerRouter = express.Router();
+const authenticate = require("../authenticate");
+const Partner = require("../models/partner");
+const cors = require("./cors");
 
 partnerRouter
   .route("/")
-  .get((req, res) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     Partner.find()
       .then((partners) => {
         res.statusCode = 200;
@@ -15,33 +16,30 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-
-  .post(authenticate.verifyUser, (req, res) => {
-    if (req.user.admin) {
+  .post(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
       Partner.create(req.body)
         .then((partner) => {
-          console.log("Partner Created ", partner);
+          // console.log('Partner Created ', partner);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
           res.json(partner);
         })
         .catch((err) => next(err));
-    } else {
-      const err = new Error(
-        "You are not authorized to perform this operation!"
-      );
-      err.status = 403;
-      return next(err);
     }
-  })
-
-  .put(authenticate.verifyUser, (req, res) => {
+  )
+  .put(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /partners");
   })
-
-  .delete(authenticate.verifyUser, (req, res) => {
-    if (req.user.admin) {
+  .delete(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
       Partner.deleteMany()
         .then((response) => {
           res.statusCode = 200;
@@ -49,18 +47,13 @@ partnerRouter
           res.json(response);
         })
         .catch((err) => next(err));
-    } else {
-      const err = new Error(
-        "You are not authorized to perform this operation!"
-      );
-      err.status = 403;
-      return next(err);
     }
-  });
+  );
 
 partnerRouter
   .route("/:partnerId")
-  .get((req, res) => {
+  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+  .get(cors.cors, (req, res, next) => {
     Partner.findById(req.params.partnerId)
       .then((partner) => {
         res.statusCode = 200;
@@ -69,16 +62,17 @@ partnerRouter
       })
       .catch((err) => next(err));
   })
-
-  .post(authenticate.verifyUser, (req, res) => {
+  .post(cors.corsWithOptions, authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /partners/${req.params.partnerId}`
     );
   })
-
-  .put(authenticate.verifyUser, (req, res) => {
-    if (req.user.admin) {
+  .put(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
       Partner.findByIdAndUpdate(
         req.params.partnerId,
         {
@@ -92,17 +86,13 @@ partnerRouter
           res.json(partner);
         })
         .catch((err) => next(err));
-    } else {
-      const err = new Error(
-        "You are not authorized to perform this operation!"
-      );
-      err.status = 403;
-      return next(err);
     }
-  })
-
-  .delete(authenticate.verifyUser, (req, res) => {
-    if (req.user.admin) {
+  )
+  .delete(
+    cors.corsWithOptions,
+    authenticate.verifyUser,
+    authenticate.verifyAdmin,
+    (req, res, next) => {
       Partner.findByIdAndDelete(req.params.partnerId)
         .then((response) => {
           res.statusCode = 200;
@@ -110,13 +100,7 @@ partnerRouter
           res.json(response);
         })
         .catch((err) => next(err));
-    } else {
-      const err = new Error(
-        "You are not authorized to perform this operation!"
-      );
-      err.status = 403;
-      return next(err);
     }
-  });
+  );
 
 module.exports = partnerRouter;
